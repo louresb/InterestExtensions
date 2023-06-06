@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
 
     <PackageId>InterestExtensions</PackageId>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <License>MIT</License>
     <Authors>Bruno Loures</Authors>
     <PackageDescription>Simple or compound interest calculation</PackageDescription>
