@@ -1,7 +1,3 @@
-<div align="center">
-  <img src="https://github.com/louresb/InterestExtensions/assets/103293696/d0a7e0f0-494d-423e-8995-4bbc686ceb3d" height="100px" width="100px">
-</div>
-
 # InterestExtensions
 
 [![NuGet Version](https://img.shields.io/nuget/v/InterestExtensions.svg?color=blue&label=NuGet%20Version)](https://www.nuget.org/packages/InterestExtensions)
