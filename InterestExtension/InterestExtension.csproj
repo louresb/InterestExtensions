@@ -1,27 +1,30 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
 
-    <PackageId>InterestExtensions</PackageId>
-    <Version>1.0.2</Version>
-    <License>MIT</License>
-    <Authors>Bruno Loures</Authors>
-    <PackageDescription>Simple or compound interest calculation</PackageDescription>
-    <Description>Simple or compound interest calculation</Description>
-    <RepositoryUrl>https://github.com/louresb/InterestExtensions</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/louresb/InterestExtensions</PackageProjectUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageIcon>icon.png</PackageIcon>
-    <PackageTags>money;interest;simple;compound</PackageTags>
-    <Title>InterestExtensions</Title>
-    <Summary>Simple or compound interest calculation</Summary>
-  </PropertyGroup>
+		<PackageId>InterestExtensions</PackageId>
+		<Version>2.0.0</Version>
+		<Authors>Bruno Loures</Authors>
+		<Company>Bruno Loures</Company>
+		<Description>Simple or compound interest calculation.</Description>
+		<PackageDescription>Simple or compound interest calculation.</PackageDescription>
+		<PackageTags>money;interest;simple;compound</PackageTags>
+		<PackageProjectUrl>https://github.com/louresb/InterestExtensions</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/louresb/InterestExtensions</RepositoryUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<License>MIT</License>
+		<PackageIcon>icon.png</PackageIcon>
+		<Title>InterestExtensions</Title>
+		<Summary>Simple or compound interest calculation.</Summary>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Include="..\Media\icon.png" Pack="true" PackagePath="\" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\Media\icon.png" Pack="true" PackagePath="" />
+		<None Include="..\README.md" Pack="true" PackagePath="" />
+	</ItemGroup>
 
 </Project>
