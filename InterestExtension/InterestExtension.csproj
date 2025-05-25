@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 
 		<PackageId>InterestExtensions</PackageId>
-		<Version>2.0.0</Version>
+		<Version>2.0.1</Version>
 		<Authors>Bruno Loures</Authors>
 		<Company>Bruno Loures</Company>
 		<Description>Simple or compound interest calculation.</Description>

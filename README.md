@@ -3,6 +3,7 @@
 [![NuGet Version](https://img.shields.io/nuget/v/InterestExtensions.svg?color=blue&label=NuGet%20Version)](https://www.nuget.org/packages/InterestExtensions)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/InterestExtensions.svg?color=orange&label=NuGet%20Downloads)](https://www.nuget.org/packages/InterestExtensions)
 [![Build Status](https://github.com/louresb/InterestExtensions/actions/workflows/main.yml/badge.svg)](https://github.com/louresb/InterestExtensions/actions)
+[![codecov](https://codecov.io/gh/louresb/InterestExtensions/branch/main/graph/badge.svg)](https://codecov.io/gh/louresb/InterestExtensions)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://github.com/louresb/InterestExtensions/blob/main/LICENSE)
 [![Development Status](https://img.shields.io/badge/status-active-brightgreen.svg)](https://github.com/louresb/InterestExtensions)
 
