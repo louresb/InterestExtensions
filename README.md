@@ -2,70 +2,99 @@
 
 [![NuGet Version](https://img.shields.io/nuget/v/InterestExtensions.svg?color=blue&label=NuGet%20Version)](https://www.nuget.org/packages/InterestExtensions)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/InterestExtensions.svg?color=orange&label=NuGet%20Downloads)](https://www.nuget.org/packages/InterestExtensions)
-[![Build Status](https://github.com/louresb/InterestExtensions/actions/workflows/main.yml/badge.svg)](https://github.com/louresb/InterestExtensions/actions)
-[![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://github.com/louresb/InterestExtensions/blob/main/LICENSE)
-[![Development Status](https://img.shields.io/badge/status-active-brightgreen.svg)](https://github.com/louresb/InterestExtensions)
+[![CI](https://github.com/louresb/InterestExtensions/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/louresb/InterestExtensions/actions/workflows/ci.yml?query=branch%3Amain)
+[![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://github.com/louresb/InterestExtensions/blob/v3.0.0/LICENSE)
 
-This extension facilitates the calculation of both simple interest and compound interest.  
-
----
+Small, dependency-free extension methods for simple and compound interest calculations.
 
 ## Installation
-
-To install the package via NuGet, you can use the following command:
 
 ```powershell
 dotnet add package InterestExtensions
 ```
 
-You can also visit the [NuGet package page](https://www.nuget.org/packages/InterestExtensions) for more information and to download the package.
+## Supported platforms
 
----
+| Package asset | Intended consumers |
+| --- | --- |
+| `netstandard2.0` | .NET implementations that support .NET Standard 2.0 |
+| `net8.0` | .NET 8 and later, including .NET 10 |
 
-## Features
+The package is built as `netstandard2.0;net8.0` and tested on both .NET 8 and .NET 10. A separate `net10.0` assembly is unnecessary because .NET 10 consumes the compatible `net8.0` asset.
 
-- Simple and compound interest calculations
-- Overloads for different compounding periods (yearly, monthly, daily)
-- XML documentation for IntelliSense and API docs
-- Thoroughly unit-tested
-- .NET 8 and above supported
+## Calculation contract
 
----
+- `principal` is a non-negative decimal amount.
+- `interestRate` is a non-negative nominal annual rate expressed as a fraction: use `0.05m` for 5% per year.
+- `period` is a non-negative number of whole years.
+- `Yearly`, `Monthly`, and `Daily` compound 1, 12, and 365 times per year respectively.
+- Daily compounding uses a fixed 365-day year; it is not a date-based day-count convention.
+- Results are returned without implicit rounding. Choose the scale and midpoint rule required by your currency and domain.
+- Invalid negative inputs or an unknown `InterestPeriod` throw `ArgumentOutOfRangeException`.
+- Calculations that exceed the range of `decimal` throw `OverflowException`.
 
-## Usage Examples
+The formulas are:
+
+```text
+simple total   = principal × (1 + annual rate × years)
+compound total = principal × (1 + annual rate / frequency)^(frequency × years)
+```
+
+## Usage
 
 ```csharp
 using InterestExtension;
 using InterestExtension.Enums;
 
-decimal principal = 100m;
-decimal interestRate = 0.004m;
-int period = 7;
+decimal principal = 1_000m;
+decimal annualRate = 0.05m; // 5% per year
+int years = 3;
 
-// Calculate simple interest (final amount)
-decimal simple = principal.CalculateSimpleInterest(interestRate, period);
+decimal simpleTotal = principal.CalculateSimpleInterest(annualRate, years);
+decimal simpleInterest = principal.CalculateSimpleInterestAmount(annualRate, years);
 
-// Calculate simple interest amount (just the interest earned)
-decimal simpleAmount = principal.CalculateSimpleInterestAmount(interestRate, period);
+decimal annualTotal = principal.CalculateCompoundInterest(annualRate, years);
+decimal annualInterest = principal.CalculateCompoundInterestAmount(annualRate, years);
 
-// Calculate compound interest (final amount, annual compounding)
-decimal compound = principal.CalculateCompoundInterest(interestRate, period);
+decimal monthlyTotal = principal.CalculateCompoundInterest(
+    annualRate,
+    years,
+    InterestPeriod.Monthly);
 
-// Calculate compound interest (monthly compounding)
-decimal compoundMonthly = principal.CalculateCompoundInterest(interestRate, period, InterestPeriod.Monthly);
+decimal dailyInterest = principal.CalculateCompoundInterestAmount(
+    annualRate,
+    years,
+    InterestPeriod.Daily);
 
-// Calculate only the interest earned
-decimal earned = principal.CalculateCompoundInterestAmount(interestRate, period, InterestPeriod.Daily);
+// InterestExtensions does not choose a financial rounding policy for you.
+decimal displayAmount = decimal.Round(monthlyTotal, 2, MidpointRounding.ToEven);
 ```
 
----
+## API overview
+
+| Method | Result |
+| --- | --- |
+| `CalculateSimpleInterest` | Principal plus simple interest |
+| `CalculateSimpleInterestAmount` | Simple interest only |
+| `CalculateCompoundInterest` | Principal plus compound interest |
+| `CalculateCompoundInterestAmount` | Compound interest only |
+
+The compound methods have an annual overload and an overload that accepts `InterestPeriod`.
+
+## Version 3
+
+Version 3 keeps the existing namespace, class, enum, and method signatures while making the calculation contract consistent. It validates all methods uniformly, rejects unknown enum values, adds the annual `CalculateCompoundInterestAmount` overload, and uses deterministic decimal exponentiation instead of converting through `double`.
+
+Existing 2.x consumers should read the [migration guide](https://github.com/louresb/InterestExtensions/blob/v3.0.0/MIGRATION.md) before opting into 3.0.0. See the [changelog](https://github.com/louresb/InterestExtensions/blob/v3.0.0/CHANGELOG.md) for the complete release notes.
+
+## Scope and limitations
+
+InterestExtensions is a small mathematical utility, not a regulatory or accounting engine. It does not model dates, leap years, 30/360 or Actual/Actual conventions, fees, taxes, variable rates, currencies, or product-specific rounding rules.
 
 ## Contributing
 
-Contributions are welcome! If you encounter any issues or have suggestions for improvements, feel free to open an issue or submit a pull request.
-
----
+Contributions are welcome. See the [contribution guide](https://github.com/louresb/InterestExtensions/blob/v3.0.0/CONTRIBUTING.md) for the local workflow and release policy.
 
 ## License
 
-[MIT License](https://github.com/louresb/InterestExtensions/blob/main/LICENSE) © [Bruno Loures](https://github.com/louresb)
+Licensed under the [MIT License](https://github.com/louresb/InterestExtensions/blob/v3.0.0/LICENSE). Copyright © Bruno Loures.

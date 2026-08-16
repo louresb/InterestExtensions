@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-test-pack:
+    name: Build, test and pack
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+          cache: true
+          cache-dependency-path: |
+            InterestExtension/packages.lock.json
+            InterestExtension.Tests/packages.lock.json
+
+      - name: Restore local tools
+        run: dotnet tool restore
+
+      - name: Restore dependencies
+        run: dotnet restore InterestExtension.sln --locked-mode
+
+      - name: Build
+        run: dotnet build InterestExtension.sln --configuration Release --no-restore -p:ContinuousIntegrationBuild=true
+
+      - name: Test with coverage
+        run: dotnet test InterestExtension.sln --configuration Release --no-build --settings coverlet.runsettings --logger "trx;LogFilePrefix=test-results" --results-directory TestResults --collect:"XPlat Code Coverage"
+
+      - name: Generate coverage report
+        run: dotnet tool run reportgenerator -reports:"TestResults/**/coverage.cobertura.xml" -targetdir:"artifacts/coverage" -reporttypes:"Html;Cobertura;MarkdownSummaryGithub"
+
+      - name: Add coverage to job summary
+        run: cat artifacts/coverage/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Enforce coverage thresholds
+        shell: pwsh
+        run: |
+          [xml] $report = Get-Content artifacts/coverage/Cobertura.xml -Raw
+          $culture = [System.Globalization.CultureInfo]::InvariantCulture
+          $lineRate = [double]::Parse($report.coverage.'line-rate', $culture)
+          $branchRate = [double]::Parse($report.coverage.'branch-rate', $culture)
+
+          if ($lineRate -lt 0.95 -or $branchRate -lt 0.90) {
+            throw "Coverage is below the required 95% lines / 90% branches."
+          }
+
+          "Coverage gate passed: {0:P2} lines / {1:P2} branches." -f $lineRate, $branchRate |
+            Add-Content $env:GITHUB_STEP_SUMMARY
+
+      - name: Pack and validate
+        run: dotnet pack InterestExtension/InterestExtension.csproj --configuration Release --no-build --no-restore -p:ContinuousIntegrationBuild=true --output artifacts/packages
+
+      - name: Restore package smoke test
+        run: dotnet restore InterestExtension.PackageSmoke/InterestExtension.PackageSmoke.csproj --packages artifacts/smoke-packages --source artifacts/packages
+
+      - name: Test installed package on .NET 8
+        run: dotnet run --project InterestExtension.PackageSmoke/InterestExtension.PackageSmoke.csproj --framework net8.0 --no-restore -- artifacts/packages
+
+      - name: Test installed package on .NET 10
+        run: dotnet run --project InterestExtension.PackageSmoke/InterestExtension.PackageSmoke.csproj --framework net10.0 --no-restore -- artifacts/packages
+
+      - name: Upload package, test and coverage artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ci-artifacts
+          path: |
+            artifacts/packages/*
+            artifacts/coverage/*
+            TestResults/**/*.trx
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload diagnostics after a failure
+        if: ${{ !cancelled() && failure() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: diagnostics-${{ github.run_attempt }}
+          path: |
+            TestResults/**/*.trx
+            TestResults/**/coverage.cobertura.xml
+            artifacts/coverage/*
+          if-no-files-found: warn
+          retention-days: 7
