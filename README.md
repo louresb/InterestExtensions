@@ -3,7 +3,6 @@
 [![NuGet Version](https://img.shields.io/nuget/v/InterestExtensions.svg?color=blue&label=NuGet%20Version)](https://www.nuget.org/packages/InterestExtensions)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/InterestExtensions.svg?color=orange&label=NuGet%20Downloads)](https://www.nuget.org/packages/InterestExtensions)
 [![CI](https://github.com/louresb/InterestExtensions/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/louresb/InterestExtensions/actions/workflows/ci.yml?query=branch%3Amain)
-[![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://github.com/louresb/InterestExtensions/blob/v3.0.0/LICENSE)
 
 Small, dependency-free extension methods for simple and compound interest calculations.
 
@@ -94,7 +93,3 @@ InterestExtensions is a small mathematical utility, not a regulatory or accounti
 ## Contributing
 
 Contributions are welcome. See the [contribution guide](https://github.com/louresb/InterestExtensions/blob/v3.0.0/CONTRIBUTING.md) for the local workflow and release policy.
-
-## License
-
-Licensed under the [MIT License](https://github.com/louresb/InterestExtensions/blob/v3.0.0/LICENSE). 
