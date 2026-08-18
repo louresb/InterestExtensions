@@ -97,4 +97,4 @@ Contributions are welcome. See the [contribution guide](https://github.com/loure
 
 ## License
 
-Licensed under the [MIT License](https://github.com/louresb/InterestExtensions/blob/v3.0.0/LICENSE). Copyright © Bruno Loures.
+Licensed under the [MIT License](https://github.com/louresb/InterestExtensions/blob/v3.0.0/LICENSE). 
