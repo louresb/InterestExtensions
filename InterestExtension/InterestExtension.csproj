@@ -15,7 +15,7 @@
     <Authors>Bruno Loures</Authors>
     <Company>Bruno Loures</Company>
     <Copyright>Copyright © Bruno Loures 2023-2026</Copyright>
-    <Description>Extension methods for simple and compound interest calculations with yearly, monthly, and daily compounding.</Description>
+    <Description>Extension methods for simple and compound interest calculations with preset or custom compounding periods.</Description>
     <PackageTags>finance;financial;money;interest;simple-interest;compound-interest</PackageTags>
     <PackageProjectUrl>https://github.com/louresb/InterestExtensions</PackageProjectUrl>
     <PackageReleaseNotes>https://github.com/louresb/InterestExtensions/blob/main/CHANGELOG.md</PackageReleaseNotes>

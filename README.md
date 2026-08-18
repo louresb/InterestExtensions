@@ -12,31 +12,28 @@ Small, dependency-free extension methods for simple and compound interest calcul
 dotnet add package InterestExtensions
 ```
 
-## Supported platforms
+## Compatibility
 
-| Package asset | Intended consumers |
-| --- | --- |
-| `netstandard2.0` | .NET implementations that support .NET Standard 2.0 |
-| `net8.0` | .NET 8 and later, including .NET 10 |
-
-The package is built as `netstandard2.0;net8.0` and tested on both .NET 8 and .NET 10. A separate `net10.0` assembly is unnecessary because .NET 10 consumes the compatible `net8.0` asset.
+Targets .NET Standard 2.0 and .NET 8. Tested on .NET 8 and .NET 10.
 
 ## Calculation contract
 
 - `principal` is a non-negative decimal amount.
 - `interestRate` is a non-negative nominal annual rate expressed as a fraction: use `0.05m` for 5% per year.
 - `period` is a non-negative number of whole years.
+- `compoundingPeriodCount` is the total number of times interest is applied.
+- `compoundingPeriodsPerYear` is a positive frequency used to derive the periodic rate.
 - `Yearly`, `Monthly`, and `Daily` compound 1, 12, and 365 times per year respectively.
 - Daily compounding uses a fixed 365-day year; it is not a date-based day-count convention.
 - Results are returned without implicit rounding. Choose the scale and midpoint rule required by your currency and domain.
-- Invalid negative inputs or an unknown `InterestPeriod` throw `ArgumentOutOfRangeException`.
-- Calculations that exceed the range of `decimal` throw `OverflowException`.
+- Invalid inputs throw `ArgumentOutOfRangeException`; calculations outside the range of `decimal` throw `OverflowException`.
 
 The formulas are:
 
 ```text
 simple total   = principal × (1 + annual rate × years)
-compound total = principal × (1 + annual rate / frequency)^(frequency × years)
+periodic rate  = annual rate / periods per year
+compound total = principal × (1 + periodic rate)^period count
 ```
 
 ## Usage
@@ -60,10 +57,16 @@ decimal monthlyTotal = principal.CalculateCompoundInterest(
     years,
     InterestPeriod.Monthly);
 
-decimal dailyInterest = principal.CalculateCompoundInterestAmount(
+// 18 monthly compounding periods, equivalent to 18 months.
+decimal eighteenMonthTotal = principal.CalculateCompoundInterestForPeriods(
     annualRate,
-    years,
-    InterestPeriod.Daily);
+    compoundingPeriodCount: 18,
+    compoundingPeriodsPerYear: 12);
+
+decimal eighteenMonthInterest = principal.CalculateCompoundInterestAmountForPeriods(
+    annualRate,
+    compoundingPeriodCount: 18,
+    compoundingPeriodsPerYear: 12);
 
 // InterestExtensions does not choose a financial rounding policy for you.
 decimal displayAmount = decimal.Round(monthlyTotal, 2, MidpointRounding.ToEven);
@@ -75,21 +78,15 @@ decimal displayAmount = decimal.Round(monthlyTotal, 2, MidpointRounding.ToEven);
 | --- | --- |
 | `CalculateSimpleInterest` | Principal plus simple interest |
 | `CalculateSimpleInterestAmount` | Simple interest only |
-| `CalculateCompoundInterest` | Principal plus compound interest |
-| `CalculateCompoundInterestAmount` | Compound interest only |
+| `CalculateCompoundInterest` | Principal plus compound interest for whole years |
+| `CalculateCompoundInterestAmount` | Compound interest only for whole years |
+| `CalculateCompoundInterestForPeriods` | Principal plus compound interest for a custom period count and frequency |
+| `CalculateCompoundInterestAmountForPeriods` | Compound interest only for a custom period count and frequency |
 
-The compound methods have an annual overload and an overload that accepts `InterestPeriod`.
+## Scope
 
-## Version 3
-
-Version 3 keeps the existing namespace, class, enum, and method signatures while making the calculation contract consistent. It validates all methods uniformly, rejects unknown enum values, adds the annual `CalculateCompoundInterestAmount` overload, and uses deterministic decimal exponentiation instead of converting through `double`.
-
-Existing 2.x consumers should read the [migration guide](https://github.com/louresb/InterestExtensions/blob/v3.0.0/MIGRATION.md) before opting into 3.0.0. See the [changelog](https://github.com/louresb/InterestExtensions/blob/v3.0.0/CHANGELOG.md) for the complete release notes.
-
-## Scope and limitations
-
-InterestExtensions is a small mathematical utility, not a regulatory or accounting engine. It does not model dates, leap years, 30/360 or Actual/Actual conventions, fees, taxes, variable rates, currencies, or product-specific rounding rules.
+InterestExtensions provides deterministic simple and compound interest calculations using `decimal`. Date-based calculations and product-specific financial rules are intentionally out of scope.
 
 ## Contributing
 
-Contributions are welcome. See the [contribution guide](https://github.com/louresb/InterestExtensions/blob/v3.0.0/CONTRIBUTING.md) for the local workflow and release policy.
+Contributions are welcome. See the [contribution guide](https://github.com/louresb/InterestExtensions/blob/main/CONTRIBUTING.md).

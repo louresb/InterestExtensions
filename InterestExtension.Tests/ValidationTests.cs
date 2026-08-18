@@ -13,8 +13,10 @@ public sealed class ValidationTests
             () => (-1m).CalculateSimpleInterestAmount(0.05m, 1),
             () => (-1m).CalculateCompoundInterest(0.05m, 1),
             () => (-1m).CalculateCompoundInterest(0.05m, 1, InterestPeriod.Monthly),
+            () => (-1m).CalculateCompoundInterestForPeriods(0.05m, 1, 12),
             () => (-1m).CalculateCompoundInterestAmount(0.05m, 1),
-            () => (-1m).CalculateCompoundInterestAmount(0.05m, 1, InterestPeriod.Daily));
+            () => (-1m).CalculateCompoundInterestAmount(0.05m, 1, InterestPeriod.Daily),
+            () => (-1m).CalculateCompoundInterestAmountForPeriods(0.05m, 1, 12));
 
     [TestMethod]
     public void EveryCalculationRejectsNegativeInterestRate()
@@ -24,8 +26,10 @@ public sealed class ValidationTests
             () => 100m.CalculateSimpleInterestAmount(-0.05m, 1),
             () => 100m.CalculateCompoundInterest(-0.05m, 1),
             () => 100m.CalculateCompoundInterest(-0.05m, 1, InterestPeriod.Monthly),
+            () => 100m.CalculateCompoundInterestForPeriods(-0.05m, 1, 12),
             () => 100m.CalculateCompoundInterestAmount(-0.05m, 1),
-            () => 100m.CalculateCompoundInterestAmount(-0.05m, 1, InterestPeriod.Daily));
+            () => 100m.CalculateCompoundInterestAmount(-0.05m, 1, InterestPeriod.Daily),
+            () => 100m.CalculateCompoundInterestAmountForPeriods(-0.05m, 1, 12));
 
     [TestMethod]
     public void EveryCalculationRejectsNegativePeriod()
@@ -52,6 +56,29 @@ public sealed class ValidationTests
     }
 
     [TestMethod]
+    public void CustomCompoundCalculationsRejectNegativePeriodCount()
+        => AssertAllThrowForParameter(
+            "compoundingPeriodCount",
+            () => 100m.CalculateCompoundInterestForPeriods(0.05m, -1, 12),
+            () => 100m.CalculateCompoundInterestAmountForPeriods(0.05m, -1, 12));
+
+    [TestMethod]
+    [DataRow(0)]
+    [DataRow(-1)]
+    public void CustomCompoundCalculationsRejectInvalidFrequency(int compoundingPeriodsPerYear)
+        => AssertAllThrowForParameter(
+            "compoundingPeriodsPerYear",
+            () => 100m.CalculateCompoundInterestForPeriods(0.05m, 1, compoundingPeriodsPerYear),
+            () => 100m.CalculateCompoundInterestAmountForPeriods(0.05m, 1, compoundingPeriodsPerYear));
+
+    [TestMethod]
+    public void ZeroValueIdentitiesStillRejectInvalidCustomFrequency()
+        => AssertAllThrowForParameter(
+            "compoundingPeriodsPerYear",
+            () => 0m.CalculateCompoundInterestForPeriods(decimal.MaxValue, 0, 0),
+            () => 0m.CalculateCompoundInterestAmountForPeriods(decimal.MaxValue, 0, 0));
+
+    [TestMethod]
     public void ZeroValueIdentitiesStillRejectUnknownPeriodType()
     {
         var periodType = (InterestPeriod)999;
@@ -69,8 +96,14 @@ public sealed class ValidationTests
 
     [TestMethod]
     public void CalculationRejectsDecimalOverflow()
-        => Assert.ThrowsExactly<OverflowException>(
+    {
+        Assert.ThrowsExactly<OverflowException>(
             () => decimal.MaxValue.CalculateCompoundInterest(1m, 1));
+        Assert.ThrowsExactly<OverflowException>(
+            () => decimal.MaxValue.CalculateCompoundInterestForPeriods(1m, 1, 1));
+        Assert.ThrowsExactly<OverflowException>(
+            () => decimal.MaxValue.CalculateCompoundInterestAmountForPeriods(decimal.MaxValue, 1, 1));
+    }
 
     [TestMethod]
     public void InterestOnlyCalculationsDoNotAddPrincipalBeforeReturning()
