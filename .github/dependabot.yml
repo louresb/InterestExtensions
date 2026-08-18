@@ -1,0 +1,30 @@
+version: 2
+
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: monthly
+      timezone: America/Sao_Paulo
+    groups:
+      test-dependencies:
+        patterns:
+          - Microsoft.NET.Test.Sdk
+          - MSTest.*
+          - coverlet.*
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: build(deps)
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+      timezone: America/Sao_Paulo
+    groups:
+      actions:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: build(actions)
