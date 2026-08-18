@@ -10,6 +10,15 @@ if (actual != expected)
     throw new InvalidOperationException($"Expected {expected}, but the installed package returned {actual}.");
 }
 
+const decimal expectedCustomPeriods = 1196.1474756866648607810499868m;
+var actualCustomPeriods = 1000m.CalculateCompoundInterestForPeriods(0.12m, 18, 12);
+
+if (actualCustomPeriods != expectedCustomPeriods)
+{
+    throw new InvalidOperationException(
+        $"Expected {expectedCustomPeriods}, but the installed package returned {actualCustomPeriods}.");
+}
+
 if (args.Length != 1)
 {
     throw new ArgumentException("Pass the package output directory as the only argument.");

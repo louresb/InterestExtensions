@@ -84,6 +84,48 @@ public static class InterestCalculator
     }
 
     /// <summary>
+    /// Calculates the total amount after a specific number of compounding periods.
+    /// </summary>
+    /// <param name="principal">The initial principal amount.</param>
+    /// <param name="interestRate">The nominal annual interest rate expressed as a fraction (for example, 0.05 for 5%).</param>
+    /// <param name="compoundingPeriodCount">The total number of times interest is applied.</param>
+    /// <param name="compoundingPeriodsPerYear">The number of compounding periods in one year.</param>
+    /// <returns>The total amount after applying compound interest.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="principal"/>, <paramref name="interestRate"/>, or
+    /// <paramref name="compoundingPeriodCount"/> is negative, or when
+    /// <paramref name="compoundingPeriodsPerYear"/> is less than one.
+    /// </exception>
+    /// <exception cref="OverflowException">Thrown when the result exceeds the range of <see cref="decimal"/>.</exception>
+    /// <remarks>
+    /// The periodic rate is <paramref name="interestRate"/> divided by
+    /// <paramref name="compoundingPeriodsPerYear"/>. For example, a count of 18 and a frequency of 12 represent
+    /// 18 monthly compounding periods. The result is not rounded.
+    /// </remarks>
+    public static decimal CalculateCompoundInterestForPeriods(
+        this decimal principal,
+        decimal interestRate,
+        int compoundingPeriodCount,
+        int compoundingPeriodsPerYear)
+    {
+        ValidateCompoundingPeriodInputs(
+            principal,
+            interestRate,
+            compoundingPeriodCount,
+            compoundingPeriodsPerYear);
+
+        if (principal == 0 || interestRate == 0 || compoundingPeriodCount == 0)
+        {
+            return principal;
+        }
+
+        return principal * CalculateCompoundFactorForPeriods(
+            interestRate,
+            compoundingPeriodCount,
+            compoundingPeriodsPerYear);
+    }
+
+    /// <summary>
     /// Calculates only the simple interest earned, excluding the principal.
     /// </summary>
     /// <param name="principal">The initial principal amount.</param>
@@ -156,7 +198,84 @@ public static class InterestCalculator
         return principal * (CalculateCompoundFactor(interestRate, period, periodsPerYear) - 1m);
     }
 
+    /// <summary>
+    /// Calculates only the compound interest earned after a specific number of compounding periods.
+    /// </summary>
+    /// <param name="principal">The initial principal amount.</param>
+    /// <param name="interestRate">The nominal annual interest rate expressed as a fraction (for example, 0.05 for 5%).</param>
+    /// <param name="compoundingPeriodCount">The total number of times interest is applied.</param>
+    /// <param name="compoundingPeriodsPerYear">The number of compounding periods in one year.</param>
+    /// <returns>The interest earned.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="principal"/>, <paramref name="interestRate"/>, or
+    /// <paramref name="compoundingPeriodCount"/> is negative, or when
+    /// <paramref name="compoundingPeriodsPerYear"/> is less than one.
+    /// </exception>
+    /// <exception cref="OverflowException">Thrown when the result exceeds the range of <see cref="decimal"/>.</exception>
+    /// <remarks>
+    /// The periodic rate is <paramref name="interestRate"/> divided by
+    /// <paramref name="compoundingPeriodsPerYear"/>. For example, a count of 18 and a frequency of 12 represent
+    /// 18 monthly compounding periods. The result is not rounded.
+    /// </remarks>
+    public static decimal CalculateCompoundInterestAmountForPeriods(
+        this decimal principal,
+        decimal interestRate,
+        int compoundingPeriodCount,
+        int compoundingPeriodsPerYear)
+    {
+        ValidateCompoundingPeriodInputs(
+            principal,
+            interestRate,
+            compoundingPeriodCount,
+            compoundingPeriodsPerYear);
+
+        if (principal == 0 || interestRate == 0 || compoundingPeriodCount == 0)
+        {
+            return 0m;
+        }
+
+        return principal * (CalculateCompoundFactorForPeriods(
+            interestRate,
+            compoundingPeriodCount,
+            compoundingPeriodsPerYear) - 1m);
+    }
+
     private static void ValidateInputs(decimal principal, decimal interestRate, int period)
+    {
+        ValidatePrincipalAndInterestRate(principal, interestRate);
+
+        if (period < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(period), period, "Period cannot be negative.");
+        }
+    }
+
+    private static void ValidateCompoundingPeriodInputs(
+        decimal principal,
+        decimal interestRate,
+        int compoundingPeriodCount,
+        int compoundingPeriodsPerYear)
+    {
+        ValidatePrincipalAndInterestRate(principal, interestRate);
+
+        if (compoundingPeriodCount < 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(compoundingPeriodCount),
+                compoundingPeriodCount,
+                "Compounding period count cannot be negative.");
+        }
+
+        if (compoundingPeriodsPerYear < 1)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(compoundingPeriodsPerYear),
+                compoundingPeriodsPerYear,
+                "Compounding periods per year must be greater than zero.");
+        }
+    }
+
+    private static void ValidatePrincipalAndInterestRate(decimal principal, decimal interestRate)
     {
         if (principal < 0)
         {
@@ -166,11 +285,6 @@ public static class InterestCalculator
         if (interestRate < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(interestRate), interestRate, "Interest rate cannot be negative.");
-        }
-
-        if (period < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(period), period, "Period cannot be negative.");
         }
     }
 
@@ -186,9 +300,18 @@ public static class InterestCalculator
     private static decimal CalculateCompoundFactor(decimal interestRate, int period, int periodsPerYear)
     {
         var totalPeriods = checked(periodsPerYear * period);
-        var periodicRate = interestRate / periodsPerYear;
 
-        return Pow(1m + periodicRate, totalPeriods);
+        return CalculateCompoundFactorForPeriods(interestRate, totalPeriods, periodsPerYear);
+    }
+
+    private static decimal CalculateCompoundFactorForPeriods(
+        decimal interestRate,
+        int compoundingPeriodCount,
+        int compoundingPeriodsPerYear)
+    {
+        var periodicRate = interestRate / compoundingPeriodsPerYear;
+
+        return Pow(1m + periodicRate, compoundingPeriodCount);
     }
 
     private static decimal Pow(decimal value, int exponent)
